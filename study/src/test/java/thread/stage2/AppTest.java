@@ -39,6 +39,7 @@ class AppTest {
             thread.join();
         }
 
+        // max-connections : 2
         assertThat(count.intValue()).isEqualTo(2);
     }
 
