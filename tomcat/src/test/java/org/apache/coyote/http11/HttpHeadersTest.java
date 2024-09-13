@@ -31,4 +31,19 @@ class HttpHeadersTest {
 		assertThat(httpHeaders.getCookie("JSESSIONID").get()).isEqualTo("hhhh");
 	}
 
+	@DisplayName("표준 헤더가 아닐 시 커스텀 헤더를 저장한다.")
+	@Test
+	void from_withCustomHeader() {
+		// given
+		List<String> headers = new ArrayList<>();
+		String customHeader = "sec-ch-ua-mobile";
+		headers.add(customHeader + ": ?0");
+
+		// when
+		HttpHeaders httpHeaders = HttpHeaders.from(headers);
+
+		//then
+		assertThat(httpHeaders.getCustomHeader(customHeader).isPresent()).isTrue();
+		assertThat(httpHeaders.getCustomHeader(customHeader).get()).isEqualTo("?0");
+	}
 }

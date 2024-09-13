@@ -19,17 +19,4 @@ class HttpHeaderTest {
 		// then
 		assertThat(httpHeader).isEqualTo(HttpHeader.CONNECTION);
 	}
-
-	@DisplayName("지원하지 않는 헤더 이름 String으로 조회시 예외발생")
-	@Test
-	void from_withInvalidHeaderName() {
-		// given
-		String headerName = "";
-
-		// when & then
-		assertThatThrownBy(() -> HttpHeader.from(headerName))
-			.isInstanceOf(IllegalArgumentException.class)
-			.hasMessage("Unknown header: " + headerName);
-	}
-
 }

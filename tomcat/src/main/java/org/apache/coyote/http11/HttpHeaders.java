@@ -7,35 +7,62 @@ public class HttpHeaders {
 	public static final String HEADER_DELIMITER = ":";
 
 	private final Map<HttpHeader, List<String>> headers;
+	private final Map<String, List<String>> customHeaders;
 
 	public static HttpHeaders from(List<String> headerLines) {
 		Map<HttpHeader, List<String>> headers = new HashMap<>();
+		Map<String, List<String>> customHeaders = new HashMap<>();
+
 		headerLines.stream()
 			.map(headerLine -> headerLine.split(HEADER_DELIMITER, 2))
 			.filter(headerToken -> headerToken.length == 2)
 			.forEach(headerToken -> {
-				HttpHeader header = HttpHeader.from(headerToken[0].trim());
+				String headerName = headerToken[0].trim();
 				String value = headerToken[1].trim();
 				List<String> headerValues = Arrays.stream(value.split(",")).map(String::trim).toList();
-				headers.computeIfAbsent(header, key -> new ArrayList<>()).addAll(headerValues);
+
+				HttpHeader standardHeader = HttpHeader.from(headerName);
+				if (standardHeader != null) {
+					headers.computeIfAbsent(standardHeader, key -> new ArrayList<>()).addAll(headerValues);
+				} else {
+					// Store as custom header
+					customHeaders.computeIfAbsent(headerName, key -> new ArrayList<>()).addAll(headerValues);
+				}
 			});
-		return new HttpHeaders(headers);
+		return new HttpHeaders(headers, customHeaders);
 	}
 
-	public HttpHeaders(Map<HttpHeader, List<String>> headers) {
+	public HttpHeaders(Map<HttpHeader, List<String>> headers, Map<String, List<String>> customHeaders) {
 		this.headers = headers;
+		this.customHeaders = customHeaders;
 	}
 
 	public void addHeader(HttpHeader header, String value) {
 		headers.computeIfAbsent(header, key -> new ArrayList<>()).add(value);
 	}
 
+	public void addCustomHeader(String headerName, String value) {
+		customHeaders.computeIfAbsent(headerName, key -> new ArrayList<>()).add(value);
+	}
+
 	public List<String> getHeaderValues(HttpHeader header) {
 		return headers.getOrDefault(header, Collections.emptyList());
 	}
 
+	public List<String> getCustomHeaderValues(String headerName) {
+		return customHeaders.getOrDefault(headerName, Collections.emptyList());
+	}
+
 	public Optional<String> getHeader(HttpHeader header) {
 		List<String> values = headers.get(header);
+		if (values == null || values.isEmpty()) {
+			return Optional.empty();
+		}
+		return Optional.of(values.get(0));
+	}
+
+	public Optional<String> getCustomHeader(String headerName) {
+		List<String> values = customHeaders.get(headerName);
 		if (values == null || values.isEmpty()) {
 			return Optional.empty();
 		}
@@ -60,5 +87,9 @@ public class HttpHeaders {
 
 	public boolean containsHeader(HttpHeader header) {
 		return headers.containsKey(header);
+	}
+
+	public boolean containsCustomHeader(String headerName) {
+		return customHeaders.containsKey(headerName);
 	}
 }

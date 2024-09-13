@@ -53,6 +53,6 @@ public enum HttpHeader {
 		return Arrays.stream(values())
 			.filter(header -> header.getHeaderName().equalsIgnoreCase(headerName))
 			.findFirst()
-			.orElseThrow(() -> new IllegalArgumentException("Unknown header: " + headerName));
+			.orElse(null); // Return null if not found, allowing custom header handling
 	}
 }
